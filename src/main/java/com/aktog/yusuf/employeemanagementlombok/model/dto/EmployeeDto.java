@@ -17,6 +17,7 @@ public class EmployeeDto {
     private String name;
     private String surname;
     private String email;
+    private String phoneNumber;
     private Integer age;
     private List<String> addressIds;
 

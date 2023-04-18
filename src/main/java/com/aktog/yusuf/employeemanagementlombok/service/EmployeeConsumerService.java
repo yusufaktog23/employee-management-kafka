@@ -3,6 +3,7 @@ package com.aktog.yusuf.employeemanagementlombok.service;
 
 import com.aktog.yusuf.employeemanagementlombok.config.KafkaTopics;
 import com.aktog.yusuf.employeemanagementlombok.model.dto.AddressAssignmentDto;
+import com.aktog.yusuf.employeemanagementlombok.model.dto.EmployeePhoneUpdateDto;
 import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -35,6 +36,17 @@ public class EmployeeConsumerService {
         log.info("Consumed {}",message);
 
         notificationService.sendAddressRemovedNotification(gson.fromJson(message,AddressAssignmentDto.class));
+
+    }
+
+    @KafkaListener(
+            groupId = KafkaTopics.EMPLOYEE_GROUP,
+            topics = KafkaTopics.EMPLOYEE_PHONE
+    )
+    public void updatePhoneNumber(String message){
+        log.info("Consumed {}",message);
+
+        notificationService.sendPhoneNumberUpdatedNotification(gson.fromJson(message, EmployeePhoneUpdateDto.class));
 
     }
 

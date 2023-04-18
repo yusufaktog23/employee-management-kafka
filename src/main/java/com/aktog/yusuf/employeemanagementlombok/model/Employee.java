@@ -25,6 +25,7 @@ public class Employee {
     private String email;
     private LocalDate birthDate;
     private Integer salary;
+    private String phoneNumber;
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
     private Set<Address> addresses;

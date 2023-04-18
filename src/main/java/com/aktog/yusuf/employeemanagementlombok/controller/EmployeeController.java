@@ -51,4 +51,10 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.removeAddress(employeeId, addressId), HttpStatus.OK);
     }
 
+    @PutMapping("/phone/{employeeId}/{phoneNumber}")
+    public ResponseEntity<EmployeeDto> updatePhoneNumber(@PathVariable String employeeId,
+                                                         @PathVariable String phoneNumber) {
+        return new ResponseEntity<>(employeeService.updatePhoneNumber(employeeId, phoneNumber), HttpStatus.OK);
+    }
+
 }

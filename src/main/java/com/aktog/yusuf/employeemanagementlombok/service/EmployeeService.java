@@ -5,6 +5,7 @@ import com.aktog.yusuf.employeemanagementlombok.model.Address;
 import com.aktog.yusuf.employeemanagementlombok.model.Employee;
 import com.aktog.yusuf.employeemanagementlombok.model.dto.AddressAssignmentDto;
 import com.aktog.yusuf.employeemanagementlombok.model.dto.EmployeeDto;
+import com.aktog.yusuf.employeemanagementlombok.model.dto.EmployeePhoneUpdateDto;
 import com.aktog.yusuf.employeemanagementlombok.model.request.CreateEmployeeRequest;
 import com.aktog.yusuf.employeemanagementlombok.repository.EmployeeRepository;
 import com.aktog.yusuf.employeemanagementlombok.service.kafka.KafkaProducerService;
@@ -35,6 +36,7 @@ public class EmployeeService {
                 createEmployeeRequest.getEmail(),
                 createEmployeeRequest.getBirthDate(),
                 createEmployeeRequest.getSalary(),
+                createEmployeeRequest.getPhoneNumber(),
                 Collections.emptySet()
         );
 
@@ -43,16 +45,7 @@ public class EmployeeService {
         return mapToDto(saved);
     }
 
-    public EmployeeDto mapToDto(Employee from) {
-        return EmployeeDto.builder()
-                .id(from.getId())
-                .name(from.getName())
-                .surname(from.getSurname())
-                .age(LocalDate.now().getYear() - from.getBirthDate().getYear())
-                .email(from.getEmail())
-                .addressIds(from.getAddresses().stream().map(Address::getId).toList())
-                .build();
-    }
+
 
     public List<EmployeeDto> getEmployeeList() {
         return employeeRepository.findAll()
@@ -76,6 +69,7 @@ public class EmployeeService {
                 request.getEmail(),
                 employee.getBirthDate(),
                 request.getSalary(),
+                employee.getPhoneNumber(),
                 employee.getAddresses()
         );
 
@@ -86,6 +80,8 @@ public class EmployeeService {
     public String deleteEmployee(String employeeId) {
 
         findByEmployeeId(employeeId);
+
+        employeeRepository.deleteById(employeeId);
 
         return "Employee id : " + employeeId + " has been deleted";
     }
@@ -105,6 +101,8 @@ public class EmployeeService {
                 employee.getEmail(),
                 employee.getBirthDate(),
                 employee.getSalary(),
+                employee.getPhoneNumber(),
+
                 addresses);
 
         kafkaProducerService.produce(KafkaTopics.EMPLOYEE_ADDRESS_ASSIGNMENT, new AddressAssignmentDto(employeeId, addressId));
@@ -126,11 +124,48 @@ public class EmployeeService {
                 employee.getEmail(),
                 employee.getBirthDate(),
                 employee.getSalary(),
+                employee.getPhoneNumber(),
+
                 addresses);
 
         kafkaProducerService.produce(KafkaTopics.EMPLOYEE_ADDRESS_UNASSIGNMENT, new AddressAssignmentDto(addressId, employeeId));
 
         return mapToDto(employeeRepository.save(toUpdate));
+    }
+
+    public EmployeeDto updatePhoneNumber(String employeeId, String phoneNumber) {
+        Employee employee = findByEmployeeId(employeeId);
+
+        String oldPhone = employee.getPhoneNumber();
+
+        Employee toUpdate = new Employee(
+                employeeId,
+                employee.getName(),
+                employee.getSurname(),
+                employee.getEmail(),
+                employee.getBirthDate(),
+                employee.getSalary(),
+                phoneNumber,
+                employee.getAddresses());
+
+        kafkaProducerService.produce(KafkaTopics.EMPLOYEE_PHONE, new EmployeePhoneUpdateDto(
+                employeeId,
+                oldPhone,
+                phoneNumber));
+
+        return mapToDto(employeeRepository.save(toUpdate));
+    }
+
+    protected EmployeeDto mapToDto(Employee from) {
+        return EmployeeDto.builder()
+                .id(from.getId())
+                .name(from.getName())
+                .surname(from.getSurname())
+                .age(LocalDate.now().getYear() - from.getBirthDate().getYear())
+                .email(from.getEmail())
+                .phoneNumber(from.getPhoneNumber())
+                .addressIds(from.getAddresses().stream().map(Address::getId).toList())
+                .build();
     }
 }
 
