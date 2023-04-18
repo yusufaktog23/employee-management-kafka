@@ -26,8 +26,6 @@ public class EmployeeService {
     private final AddressService addressService;
     private final KafkaProducerService kafkaProducerService;
 
-
-    //
     public EmployeeDto createEmployee(CreateEmployeeRequest createEmployeeRequest) {
 
         Employee employee = new Employee("",
@@ -105,7 +103,8 @@ public class EmployeeService {
 
                 addresses);
 
-        kafkaProducerService.produce(KafkaTopics.EMPLOYEE_ADDRESS_ASSIGNMENT, new AddressAssignmentDto(employeeId, addressId));
+        kafkaProducerService.produce(KafkaTopics.EMPLOYEE_ADDRESS_ASSIGNMENT,
+                new AddressAssignmentDto(employeeId, addressId));
 
         return mapToDto(employeeRepository.save(toUpdate));
     }
@@ -128,7 +127,8 @@ public class EmployeeService {
 
                 addresses);
 
-        kafkaProducerService.produce(KafkaTopics.EMPLOYEE_ADDRESS_UNASSIGNMENT, new AddressAssignmentDto(addressId, employeeId));
+        kafkaProducerService.produce(KafkaTopics.EMPLOYEE_ADDRESS_UNASSIGNMENT,
+                new AddressAssignmentDto(addressId, employeeId));
 
         return mapToDto(employeeRepository.save(toUpdate));
     }
@@ -168,5 +168,4 @@ public class EmployeeService {
                 .build();
     }
 }
-
 
